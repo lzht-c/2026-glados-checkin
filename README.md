@@ -1,5 +1,14 @@
 # 🎁 每天+20积分，5分钟搞定 GLaDOS 自动签到
 
+## 2026-09 新版会话配置
+
+本仓库已适配 [v2026.9.30 的会话与设备校验](https://github.com/lankerr/2026-glados-checkin/releases/tag/v2026.9.30)。在 `https://glados.cloud` 退出并重新登录，从成功的 `/api/user/status` 请求中复制完整 Cookie 到 Actions Secret `GLADOS_COOKIE`，确认包含 `gld:sess` 和 `gld:sess.sig`。
+
+将同一请求的完整 `User-Agent` 配置到 Actions **Variable** `GLADOS_USER_AGENT`。Cookie 与 User-Agent 必须来自同一个登录浏览器。旧版 `koa:sess` 会话可能仍在浏览器中保留，请以成功请求的 Cookie 为准。新版不依赖 `GLADOS_AUTHORIZATION`。
+
+现有北京时间 09:30 / 21:30 的定时签到和通知设置继续使用；脚本内部对临时失败最多尝试三次，认证失败直接报告失败。请求固定到当前会话主站 `glados.cloud`。
+
+
 <div align="center">
 
 **你不用写代码 · 不用买服务器 · 不用每天登录**
@@ -238,7 +247,7 @@ GLaDOS 在 2026 年初进行了 API 更新，**绝大多数旧签到脚本已失
 
 ![Cookie-Editor 扩展](images/cookie-extension.png)
 
-> 💡 **提示**：以下任意一个扩展都可以使用，只要能显示 `koa:sess` 和 `koa:sess.sig` 这两个 Cookie 就行！
+> 💡 **提示**：以下任意一个扩展都可以使用，只要能显示 `gld:sess` 和 `gld:sess.sig` 这两个 Cookie 就行！
 
 ![可选的 Cookie 扩展](images/cookie-alternative.png)
 
@@ -248,8 +257,8 @@ GLaDOS 在 2026 年初进行了 API 更新，**绝大多数旧签到脚本已失
 2. 进入 **签到页面**（Console → Checkin）
 3. 点击浏览器右上角的 **Cookie-Editor** 扩展图标
 4. 找到并复制这两个值：
-   - `koa:sess` → 一串很长的字符串
-   - `koa:sess.sig` → 一串较短的字符串
+   - `gld:sess` → 一串很长的字符串
+   - `gld:sess.sig` → 一串较短的字符串
 
 ![获取 Cookie](images/glados-cookies.png)
 
@@ -258,13 +267,13 @@ GLaDOS 在 2026 年初进行了 API 更新，**绝大多数旧签到脚本已失
 将两个值按以下格式组合，**注意格式必须完全正确**：
 
 ```text
-koa:sess=你的长字符串; koa:sess.sig=你的短字符串
+gld:sess=你的长字符串; gld:sess.sig=你的短字符串
 ```
 
 **正确示例**：
 
 ```text
-koa:sess=eyJ1c2VySWQiOjEyMzQ1Njc4OTB9; koa:sess.sig=abcdef123456
+gld:sess=eyJ1c2VySWQiOjEyMzQ1Njc4OTB9; gld:sess.sig=abcdef123456
 ```
 
 **常见错误**：
@@ -280,12 +289,12 @@ koa:sess=eyJ1c2VySWQiOjEyMzQ1Njc4OTB9; koa:sess.sig=abcdef123456
 
 ```python
 # 将你的 Cookie 粘贴到下面的引号中
-cookie = "koa:sess=你的长字符串; koa:sess.sig=你的短字符串"
+cookie = "gld:sess=你的长字符串; gld:sess.sig=你的短字符串"
 
 # 验证
-if "koa:sess=" in cookie and "koa:sess.sig=" in cookie and "; " in cookie:
+if "gld:sess=" in cookie and "gld:sess.sig=" in cookie and "; " in cookie:
     parts = cookie.split("; ")
-    if len(parts) == 2 and parts[0].startswith("koa:sess=") and parts[1].startswith("koa:sess.sig="):
+    if len(parts) == 2 and parts[0].startswith("gld:sess=") and parts[1].startswith("gld:sess.sig="):
         print("✅ Cookie 格式正确！")
     else:
         print("❌ 格式错误，请检查分号和空格")
@@ -475,7 +484,7 @@ pip install -r requirements.txt
 
 ```bash
 # 配置 Cookie
-export GLADOS_COOKIE="koa:sess=xxxxxx; koa:sess.sig=yyyyyy"
+export GLADOS_COOKIE="gld:sess=xxxxxx; gld:sess.sig=yyyyyy"
 
 # 可选：配置推送
 export PUSH_LEVEL="all"
@@ -491,7 +500,7 @@ python3 checkin.py
 通过 `crontab -e` 配置每天自动执行（例如每天早上 9:30）：
 
 ```bash
-30 9 * * * export GLADOS_COOKIE="koa:sess=xxx..."; cd /path/to/2026-glados-checkin && python3 checkin.py >> glados.log 2>&1
+30 9 * * * export GLADOS_COOKIE="gld:sess=xxx..."; cd /path/to/2026-glados-checkin && python3 checkin.py >> glados.log 2>&1
 ```
 
 ---
@@ -522,7 +531,7 @@ python3 checkin.py
           # 配置服务
           services.glados-checkin = {
             enable = true;
-            cookie = "koa:sess=xxx; koa:sess.sig=yyy";
+            cookie = "gld:sess=xxx; gld:sess.sig=yyy";
 
             # 【可选】消息推送配置
             pushLevel = "all"; # 或 "fail_only"
