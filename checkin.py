@@ -95,6 +95,9 @@ class GLaDOS:
                 url = f"{d}{path}"
                 h = HEADERS.copy()
                 h['Cookie'] = self.cookie
+                authorization = os.environ.get('GLADOS_AUTHORIZATION', '').strip()
+                if authorization and d == DOMAINS[0]:
+                    h['Authorization'] = authorization
                 h['Origin'] = d
                 h['Referer'] = f"{d}/console/checkin"
                 
@@ -273,6 +276,10 @@ def main():
             pushplus(ptoken, title, content)
         if tg_token and tg_chat_id:
             telegram_push(tg_token, tg_chat_id, title, content)
+
+    # A rejected check-in must fail the workflow and trigger its retry step.
+    if success_cnt != len(cookies):
+        sys.exit(1)
 
 if __name__ == '__main__':
     main()
