@@ -33,6 +33,7 @@ jobs:
         timeout-minutes: 5
         env:
           GLADOS_COOKIE: ${{ secrets.GLADOS_COOKIE }}
+          GLADOS_AUTHORIZATION: ${{ secrets.GLADOS_AUTHORIZATION }}
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
 
       - name: Retry on Failure
@@ -44,4 +45,5 @@ jobs:
         timeout-minutes: 5
         env:
           GLADOS_COOKIE: ${{ secrets.GLADOS_COOKIE }}
+          GLADOS_AUTHORIZATION: ${{ secrets.GLADOS_AUTHORIZATION }}
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
